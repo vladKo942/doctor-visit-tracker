@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+    <changeSet id="insert-test-data-1" author="v.kozak">
+        <insert tableName="doctors">
+            <column name="id" value="1"/>
+            <column name="first_name" value="Олександр"/>
+            <column name="last_name" value="Федик"/>
+            <column name="timezone" value="Europe/Kiev"/>
+        </insert>
+
+        <insert tableName="doctors">
+            <column name="id" value="2"/>
+            <column name="first_name" value="Марія"/>
+            <column name="last_name" value="Гуменяк"/>
+            <column name="timezone" value="America/New_York"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-test-data-2" author="v.kozak">
+        <insert tableName="patients">
+            <column name="id" value="1"/>
+            <column name="first_name" value="Іван"/>
+            <column name="last_name" value="Лебідь"/>
+        </insert>
+
+        <insert tableName="patients">
+            <column name="id" value="2"/>
+            <column name="first_name" value="Марія"/>
+            <column name="last_name" value="Гринишин"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-test-data-3" author="v.kozak">
+        <insert tableName="visits">
+            <column name="id" value="1"/>
+            <column name="start_date_time" value="2025-03-01 10:00:00"/>
+            <column name="end_date_time" value="2025-03-01 10:30:00"/>
+            <column name="patient_id" value="1"/>
+            <column name="doctor_id" value="1"/>
+        </insert>
+
+        <insert tableName="visits">
+            <column name="id" value="2"/>
+            <column name="start_date_time" value="2025-03-02 14:00:00"/>
+            <column name="end_date_time" value="2025-03-02 14:45:00"/>
+            <column name="patient_id" value="2"/>
+            <column name="doctor_id" value="2"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

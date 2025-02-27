@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/doctor_visit_tracker?useSSL=false&serverTimezone=UTC
+    username: vladkozak
+    password: 12345qwertY
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  liquibase:
+    change-log: classpath:liquibase/doctor-visit-tracker-changelog.xml
