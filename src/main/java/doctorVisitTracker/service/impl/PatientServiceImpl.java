@@ -4,7 +4,6 @@ import doctorVisitTracker.dto.PatientListResponse;
 import doctorVisitTracker.dto.PatientResponse;
 import doctorVisitTracker.dto.PatientVisitResponse;
 import doctorVisitTracker.entity.Patient;
-import doctorVisitTracker.entity.Visit;
 import doctorVisitTracker.repository.PatientRepository;
 import doctorVisitTracker.repository.VisitRepository;
 import doctorVisitTracker.service.PatientService;

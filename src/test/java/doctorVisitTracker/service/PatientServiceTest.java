@@ -76,9 +76,9 @@ class PatientServiceTest {
         assertNotNull(response);
         assertEquals(1, response.count());
         assertEquals(1, response.data().size());
-        assertEquals("Іван", response.data().get(0).firstName());
-        assertEquals(1, response.data().get(0).lastVisits().size());
-        assertEquals("Олександр", response.data().get(0).lastVisits().get(0).doctor().firstName());
+        assertEquals("Іван", response.data().getFirst().firstName());
+        assertEquals(1, response.data().getFirst().lastVisits().size());
+        assertEquals("Олександр", response.data().getFirst().lastVisits().getFirst().doctor().firstName());
     }
 }
 
