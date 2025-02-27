@@ -26,17 +26,8 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public PatientListResponse getPatients(int page, int size, String search, List<Long> doctorIds) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Patient> patientEntities;
 
-        if (search != null && doctorIds != null && !doctorIds.isEmpty()) {
-            patientEntities = patientRepository.findByFirstNameContainingIgnoreCaseAndDoctorIds(search, doctorIds, pageable);
-        } else if (search != null) {
-            patientEntities = patientRepository.findByFirstNameContainingIgnoreCase(search, pageable);
-        } else if (doctorIds != null && !doctorIds.isEmpty()) {
-            patientEntities = patientRepository.findByDoctorIds(doctorIds, pageable);
-        } else {
-            patientEntities = patientRepository.findAll(pageable);
-        }
+        Page<Patient> patientEntities = findPatients(search, doctorIds, pageable);
 
         List<PatientResponse> patients = patientEntities.getContent().stream()
                 .map(this::mapToDto)
@@ -45,16 +36,33 @@ public class PatientServiceImpl implements PatientService {
         return new PatientListResponse(patients, (int) patientEntities.getTotalElements());
     }
 
-    private PatientResponse mapToDto(Patient patient) {
-        List<Visit> lastVisitEntities = visitRepository.findLatestVisitsGroupedByDoctor(patient.getId());
+    private Page<Patient> findPatients(String search, List<Long> doctorIds, Pageable pageable) {
+        if (search != null && hasDoctorIds(doctorIds)) {
+            return patientRepository.findByFirstNameContainingIgnoreCaseAndDoctorIds(search, doctorIds, pageable);
+        }
+        if (search != null) {
+            return patientRepository.findByFirstNameContainingIgnoreCase(search, pageable);
+        }
+        if (hasDoctorIds(doctorIds)) {
+            return patientRepository.findByDoctorIds(doctorIds, pageable);
+        }
+        return patientRepository.findAll(pageable);
+    }
 
-        List<PatientVisitResponse> visitResponses = lastVisitEntities.stream()
-                .map(visit -> {
-                    int totalPatients = visitRepository.countDistinctPatientsByDoctorId(visit.getDoctor().getId());
-                    return PatientVisitResponse.from(visit, totalPatients);
-                })
+    private boolean hasDoctorIds(List<Long> doctorIds) {
+        return doctorIds != null && !doctorIds.isEmpty();
+    }
+
+    private PatientResponse mapToDto(Patient patient) {
+        List<PatientVisitResponse> visitResponses = visitRepository.findLatestVisitsGroupedByDoctor(patient.getId())
+                .stream()
+                .map(visit -> PatientVisitResponse.from(visit, countTotalPatients(visit.getDoctor().getId())))
                 .toList();
 
         return new PatientResponse(patient.getFirstName(), patient.getLastName(), visitResponses);
+    }
+
+    private int countTotalPatients(Long doctorId) {
+        return visitRepository.countDistinctPatientsByDoctorId(doctorId);
     }
 }
