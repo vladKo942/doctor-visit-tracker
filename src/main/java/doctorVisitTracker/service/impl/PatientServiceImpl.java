@@ -4,8 +4,8 @@ import doctorVisitTracker.dto.PatientListResponse;
 import doctorVisitTracker.dto.PatientResponse;
 import doctorVisitTracker.dto.PatientVisitResponse;
 import doctorVisitTracker.entity.Patient;
+import doctorVisitTracker.entity.Visit;
 import doctorVisitTracker.repository.PatientRepository;
-import doctorVisitTracker.repository.VisitRepository;
 import doctorVisitTracker.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -20,48 +21,25 @@ import java.util.List;
 public class PatientServiceImpl implements PatientService {
 
     private final PatientRepository patientRepository;
-    private final VisitRepository visitRepository;
 
     @Override
     public PatientListResponse getPatients(int page, int size, String search, List<Long> doctorIds) {
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Patient> patientEntities = findPatients(search, doctorIds, pageable);
+        Page<Object[]> resultPage = patientRepository.findPatientsWithVisitsAndDoctorStats(search, doctorIds, pageable);
 
-        List<PatientResponse> patients = patientEntities.getContent().stream()
-                .map(this::mapToDto)
-                .toList();
+        List<PatientResponse> patients = resultPage.getContent().stream().map(record -> {
+            Patient patient = (Patient) record[0];
+            Visit visit = (Visit) record[1];
+            int patientCount = ((Number) record[2]).intValue();
 
-        return new PatientListResponse(patients, (int) patientEntities.getTotalElements());
-    }
+            List<PatientVisitResponse> visitResponses = visit != null
+                    ? List.of(PatientVisitResponse.from(visit, patientCount))
+                    : Collections.emptyList();
 
-    private Page<Patient> findPatients(String search, List<Long> doctorIds, Pageable pageable) {
-        if (search != null && hasDoctorIds(doctorIds)) {
-            return patientRepository.findByFirstNameContainingIgnoreCaseAndDoctorIds(search, doctorIds, pageable);
-        }
-        if (search != null) {
-            return patientRepository.findByFirstNameContainingIgnoreCase(search, pageable);
-        }
-        if (hasDoctorIds(doctorIds)) {
-            return patientRepository.findByDoctorIds(doctorIds, pageable);
-        }
-        return patientRepository.findAll(pageable);
-    }
+            return new PatientResponse(patient.getFirstName(), patient.getLastName(), visitResponses);
+        }).toList();
 
-    private boolean hasDoctorIds(List<Long> doctorIds) {
-        return doctorIds != null && !doctorIds.isEmpty();
-    }
-
-    private PatientResponse mapToDto(Patient patient) {
-        List<PatientVisitResponse> visitResponses = visitRepository.findLatestVisitsGroupedByDoctor(patient.getId())
-                .stream()
-                .map(visit -> PatientVisitResponse.from(visit, countTotalPatients(visit.getDoctor().getId())))
-                .toList();
-
-        return new PatientResponse(patient.getFirstName(), patient.getLastName(), visitResponses);
-    }
-
-    private int countTotalPatients(Long doctorId) {
-        return visitRepository.countDistinctPatientsByDoctorId(doctorId);
+        return new PatientListResponse(patients, (int) resultPage.getTotalElements());
     }
 }

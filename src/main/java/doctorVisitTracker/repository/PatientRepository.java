@@ -10,16 +10,15 @@ import java.util.List;
 
 public interface PatientRepository extends JpaRepository<Patient, Long> {
 
-    Page<Patient> findByFirstNameContainingIgnoreCase(String firstName, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Patient p " +
-            "JOIN Visit v ON p.id = v.patient.id " +
-            "WHERE v.doctor.id IN :doctorIds")
-    Page<Patient> findByDoctorIds(List<Long> doctorIds, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Patient p " +
-            "JOIN Visit v ON p.id = v.patient.id " +
-            "WHERE LOWER(p.firstName) LIKE LOWER(CONCAT('%', :search, '%')) " +
-            "AND v.doctor.id IN :doctorIds")
-    Page<Patient> findByFirstNameContainingIgnoreCaseAndDoctorIds(String search, List<Long> doctorIds, Pageable pageable);
+    @Query("""
+    SELECT p, v, COUNT(DISTINCT v2.patient.id)
+    FROM Patient p
+    LEFT JOIN Visit v ON v.startDateTime = (
+        SELECT MAX(v2.startDateTime) FROM Visit v2 WHERE v2.patient.id = p.id
+    )
+    LEFT JOIN Visit v2 ON v2.doctor.id = v.doctor.id
+    WHERE (:search IS NULL OR LOWER(p.firstName) LIKE LOWER(CONCAT('%', :search, '%')))
+    AND (:doctorIds IS NULL OR v.doctor.id IN :doctorIds)
+    GROUP BY p, v""")
+    Page<Object[]> findPatientsWithVisitsAndDoctorStats(String search, List<Long> doctorIds, Pageable pageable);
 }

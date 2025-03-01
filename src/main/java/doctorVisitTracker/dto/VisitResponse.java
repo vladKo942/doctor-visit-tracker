@@ -3,6 +3,7 @@ package doctorVisitTracker.dto;
 import doctorVisitTracker.entity.Visit;
 
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 public record VisitResponse(String start, String end, Long doctorId) {
@@ -13,8 +14,8 @@ public record VisitResponse(String start, String end, Long doctorId) {
         ZoneId zoneId = ZoneId.of(visit.getDoctor().getTimezone());
 
         return new VisitResponse(
-                visit.getStartDateTime().atZone(zoneId).format(FORMATTER),
-                visit.getEndDateTime().atZone(zoneId).format(FORMATTER),
+                visit.getStartDateTime().atZone(ZoneOffset.UTC).withZoneSameInstant(zoneId).format(FORMATTER),
+                visit.getEndDateTime().atZone(ZoneOffset.UTC).withZoneSameInstant(zoneId).format(FORMATTER),
                 visit.getDoctor().getId()
         );
     }

@@ -3,6 +3,4 @@ package doctorVisitTracker.repository;
 import doctorVisitTracker.entity.Doctor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface DoctorRepository extends JpaRepository<Doctor, Long> {
-
-}
+public interface DoctorRepository extends JpaRepository<Doctor, Long> {}

@@ -4,4 +4,5 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
     <include file="/liquibase/table.changelog.xml"/>
     <include file="/liquibase/insert-test-data.changelog.xml"/>
+    <include file="/liquibase/change-local-date-time-to-instant-in-visits.changelog.xml"/>
 </databaseChangeLog>
